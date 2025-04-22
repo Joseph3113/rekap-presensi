@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Presensi Wajah</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background-color: #f2f2f2;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        img {
+            border-radius: 10px;
+            border: 3px solid #4CAF50;
+        }
+        #message {
+            color: green;
+            margin-top: 10px;
+        }
+        #attendance {
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: inline-block;
+            text-align: left;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Presensi Wajah</h1>
+
+    <form id="templateForm">
+        <input type="text" name="nama" id="nama" placeholder="Masukkan Nama" required>
+        <button type="submit">Ambil Template</button>
+    </form>
+
+    <button onclick="startDetection()">Mulai Deteksi</button>
+    <button onclick="lihatKehadiran()">Lihat Kehadiran</button>
+    <a href="/lihat_kehadiran" target="_blank"><button type="button">Lihat Rekap (Tabel)</button></a>
+
+    <div>
+        <img id="video-feed" src="{{ url_for('video_feed') }}" width="640" height="480" alt="Kamera">
+    </div>
+
+    <p id="message"></p>
+    <pre id="attendance"></pre>
+
+    <script>
+        const messageBox = document.getElementById("message");
+        const attendanceBox = document.getElementById("attendance");
+        const namaInput = document.getElementById("nama");
+
+        document.getElementById("templateForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const nama = namaInput.value.trim();
+            if (!nama) {
+                messageBox.innerText = "Nama harus diisi!";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("nama", nama);
+
+            messageBox.innerText = "Mengambil template...";
+            const res = await fetch("/capture_template", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await res.json();
+            messageBox.innerText = result.message;
+            refreshVideoFeed();
+        });
+
+        async function startDetection() {
+            messageBox.innerText = "Memulai deteksi wajah...";
+            const res = await fetch("/start_detection", { method: "POST" });
+            const result = await res.json();
+            messageBox.innerText = result.message;
+            refreshVideoFeed();
+        }
+
+        async function lihatKehadiran() {
+            const res = await fetch("/view_attendance");
+            const result = await res.json();
+            attendanceBox.innerText = result.attendance;
+        }
+
+        function refreshVideoFeed() {
+            const video = document.getElementById("video-feed");
+            const currentSrc = video.src;
+            video.src = "";
+            setTimeout(() => {
+                video.src = currentSrc + "?t=" + new Date().getTime();
+            }, 100);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rekap Kehadiran</title>
+    <style>
+        body { font-family: Arial; background: #f2f2f2; text-align: center; }
+        table { border-collapse: collapse; margin: 20px auto; width: 60%; background: #fff; }
+        th, td { padding: 12px; border: 1px solid #ccc; }
+        th { background: #4CAF50; color: #fff; }
+        .message { margin-top: 20px; color: #333; }
+        button { padding: 10px 20px; margin-top: 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>Rekap Kehadiran</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="message">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% if data %}
+    <table>
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Waktu Kehadiran</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nama, times in data.items() %}
+                {% for time in times %}
+                    <tr>
+                        <td>{{ nama }}</td>
+                        <td>{{ time }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="message">{{ message }}</p>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('hapus_rekap') }}">
+        <button type="submit" onclick="return confirm('Yakin hapus semua data?')">Hapus Rekap Kehadiran</button>
+    </form>
+</body>
+</html>
